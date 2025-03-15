@@ -9,9 +9,9 @@ app.secret_key = "yfootballm"
 
 
 #api keys for openai and RAWG (gaming metadat)
-os.environ["OPENAI_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = ""
 openai.api_key = os.getenv("OPENAI_API_KEY")
-os.environ["RAWG_API_KEY"] = "7c11c6b61443433ba941a9c037147be8"
+os.environ["RAWG_API_KEY"] = ""
 RAWG_API_KEY = os.getenv("RAWG_API_KEY")
 
 def get_game_recommendations(query):
