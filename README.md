@@ -1,7 +1,7 @@
 
 Enjoy playing around: https://pht5sypm5h.us-east-1.awsapprunner.com/
 
-# Video-Game-Advisor
+~# Video-Game-Advisor
 
 **Video-Game-Advisor** is a containerizedweb application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
 
@@ -10,9 +10,7 @@ Enjoy playing around: https://pht5sypm5h.us-east-1.awsapprunner.com/
 ---
 
 ```markdown
-# Video-Game-Advisor
 
-**Video-Game-Advisor** is a containerized Flask web application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions or titles. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
 
 
 ## Features
