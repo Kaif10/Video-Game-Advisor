@@ -1,29 +1,19 @@
 
 Enjoy playing around: https://pht5sypm5h.us-east-1.awsapprunner.com/
 
-# Game Oracle
+# Video-Game-Advisor
 
-**Game Oracle** is a containerized Flask web application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions or titles. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
+**Video-Game-Advisor** is a containerizedweb application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
 
-Below is a sample GitHub README that describes your project in detail. You can adjust it as needed:
+
 
 ---
 
 ```markdown
-# Game Oracle
+# Video-Game-Advisor
 
-**Game Oracle** is a containerized Flask web application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions or titles. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
+**Video-Game-Advisor** is a containerized Flask web application that leverages OpenAI’s GPT-3.5-turbo and the RAWG API to recommend video games based on user descriptions or titles. With a retro gaming-inspired UI, the app displays personalized game recommendations complete with metadata (cover images, release dates, ratings, and links) in an engaging, responsive interface.
 
-## Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Docker Usage](#docker-usage)
-- [Deployment](#deployment)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
@@ -135,32 +125,10 @@ CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
 
 If you prefer a serverless approach using AWS Lambda, you can update your Dockerfile to use the AWS Lambda base image and integrate with Mangum. (See project documentation for details.)
 
-## Project Structure
 
-```
-game-oracle/
-├── app.py                # Main Flask application
-├── Dockerfile            # Docker build instructions
-├── requirements.txt      # Python dependencies
-├── templates/            # HTML templates (e.g., index.html)
-└── static/               # Static assets (images, CSS, etc.)
-```
 
 ## Contributing
 
 Contributions are welcome! Please fork the repository, create a feature branch, and submit a pull request with your changes. Follow best practices for code quality and testing.
 
-## License
 
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-This README gives a clear overview of your project, details the technology and deployment workflow, and includes instructions for local development and deployment. This project demonstrates proficiency in containerization, cloud deployment, and API integration—making it a strong portfolio piece for senior ML/AI/SWE roles when complemented with additional projects showcasing advanced ML systems.
-
-Feel free to customize further as needed!
-```
-
----
-
-This README should be concise, clear, and detailed enough for both developers and hiring managers to understand your project's capabilities and technical stack. Let me know if you need any more modifications!
