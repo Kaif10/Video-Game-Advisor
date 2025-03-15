@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Game Recommender</title>
+    <!-- Use a cool retro gaming font -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Main background with retro gaming image and dark overlay */
+        body {
+           
+            background-size: cover;
+            background-color: #121212; /* Dark background */
+            color: #e0e0e0;
+            font-family: 'Press Start 2P', cursive, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .logo {
+            margin-bottom: 20px;
+        }
+        .logo img {
+            width: 150px;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.7);
+        }
+        .quote {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+        .search-bar {
+            width: 100%;
+            padding: 15px 60px 15px 20px; /* extra space on right for the icon */
+            font-size: 18px;
+            border: none;
+            border-radius: 30px; /* curved ends */
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
+            background-color: #FFFDD0; /* cream color */
+            color: #000;
+        }
+        .search-bar::placeholder {
+            color: pink;
+        }
+        .search-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #ffcc00;
+            cursor: pointer;
+        }
+        /* Ticker styles: matching background (#1e1e1e) to blend with game blocks */
+        .ticker {
+            overflow: hidden;
+            white-space: nowrap;
+            background: black;
+            padding: 10px 0;
+            margin-bottom: 40px;
+            border-radius: 10px;
+        }
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scroll 20s linear infinite;
+        }
+        .ticker-content img {
+            margin: 0 20px;
+            width: 50px;
+            height: 50px;
+            vertical-align: middle;
+            border-radius: 50%; /* Makes the images round */
+            border: 2px solid #1e1e1e; /* Matches the ticker background */
+        }
+        @keyframes scroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-100%); }
+        }
+        .game {
+            margin: 20px auto;
+            width: 90%;
+            padding: 20px;
+            background: #1e1e1e;
+            border-radius: 15px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .game:hover {
+            transform: scale(1.03);
+        }
+        .cover {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 15px;
+            transition: transform 0.2s;
+        }
+        .cover:hover {
+            transform: scale(1.05);
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        /* Loading overlay styles */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 18, 18, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none; /* Hidden by default */
+        }
+        #loading-overlay .spinner {
+            font-size: 48px;
+            color: #ffcc00;
+            animation: spin 1.5s linear infinite, glitch 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes glitch {
+            0% { filter: drop-shadow(2px 2px 2px #ff0000); }
+            20% { filter: drop-shadow(-2px -2px 2px #00ff00); }
+            40% { filter: drop-shadow(2px -2px 2px #0000ff); }
+            60% { filter: drop-shadow(-2px 2px 2px #ff00ff); }
+            80% { filter: drop-shadow(2px 2px 2px #00ffff); }
+            100% { filter: drop-shadow(-2px -2px 2px #ffcc00); }
+        }
+    </style>
+    <script>
+        // Show loading overlay on form submit
+        function showLoading() {
+            document.getElementById("loading-overlay").style.display = "flex";
+        }
+    </script>
+</head>
+<body>
+    <!-- Loading Overlay with Glitchy Spinner -->
+    <div id="loading-overlay">
+        <i class="fas fa-spinner spinner"></i>
+    </div>
+
+    <div class="container">
+        
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.webp') }}" alt="Your Custom Logo">
+    </div>
+
+        <!-- Cool Quote -->
+        <div class="quote">
+            Reveal the game your heart seeks—but you can't name it.
+        </div>
+        <!-- Search Bar with Icon -->
+        <div class="search-container">
+            <form method="post" onsubmit="showLoading()">
+                <input type="text" name="query" class="search-bar" placeholder="Describe the game you’d like to play but don’t know the name of" required>
+                <button type="submit" class="search-button">
+                    <i class="fa fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        {% if error_msg %}
+            <div class="error-message" style="color: #ffcc00; font-size: 18px; margin-bottom: 40px;">
+                {{ error_msg }}
+            </div>
+        {% endif %}
+
+
+        <!-- Ticker with Retro Gaming Controller Icons -->
+        <div class="ticker">
+            <div class="ticker-content">
+                <img src="{{ url_for('static', filename='logo1.webp') }}" alt="Icon 1">
+                <img src="{{ url_for('static', filename='logo2.webp') }}" alt="Icon 2">
+                <img src="{{ url_for('static', filename='logo3.webp') }}" alt="Icon 3">
+                <img src="{{ url_for('static', filename='logo4.webp') }}" alt="Icon 4">
+                <img src="{{ url_for('static', filename='logo5.webp') }}" alt="Icon 5">
+                <!-- Repeat for continuous effect -->
+                <img src="{{ url_for('static', filename='logo1.webp') }}" alt="Icon 1">
+                <img src="{{ url_for('static', filename='logo2.webp') }}" alt="Icon 2">
+                <img src="{{ url_for('static', filename='logo3.webp') }}" alt="Icon 3">
+                <img src="{{ url_for('static', filename='logo4.webp') }}" alt="Icon 4">
+                <img src="{{ url_for('static', filename='logo5.webp') }}" alt="Icon 5">
+            </div>
+        </div>
+
+        <!-- Recommended Games -->
+        {% if recommendations %}
+            {% for game in recommendations %}
+            <a href="{{ game.website }}" target="_blank">
+                <div class="game">
+                    <h2>{{ game.name }}</h2>
+                    {% if game.cover %}
+                        <img src="{{ game.cover }}" alt="Cover image for {{ game.name }}" class="cover">
+                    {% endif %}
+                    <p><strong>Released:</strong> {{ game.released }}</p>
+                    <p><strong>Rating:</strong> {{ game.rating }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        {% endif %}
+ 
+    </div>
+
+      
+</body>
+</html>
