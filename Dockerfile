@@ -1,20 +1,33 @@
-# Use the official Python 3.12 image
 FROM python:3.12-slim
 
-# Set the working directory in the container
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8080
+
 WORKDIR /app
 
-# Copy requirements file and install dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+# Install system deps if ever needed (kept minimal for slim image)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    netcat-traditional \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of application code
+# Install Python deps first for better layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the application code
 COPY . .
 
-# Expose port 8080 (as thats the default port AWS apprunner uses) or whichever port your Flask app uses
+# Create non-root user and switch
+RUN adduser --disabled-password --gecos "" appuser
+USER appuser
+
 EXPOSE 8080
 
+# Simple healthcheck hitting the Flask health endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 CMD python -c "import os, urllib.request; urllib.request.urlopen('http://127.0.0.1:%s/healthz' % os.getenv('PORT','8080'))"
 
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]
+# Gunicorn with gthread workers; override via env if desired
+CMD ["gunicorn", "-b", "0.0.0.0:8080", "-k", "gthread", "--threads", "4", "--workers", "2", "app:app"]
 
 

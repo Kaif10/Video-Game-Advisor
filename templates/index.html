@@ -2,151 +2,188 @@
 <html>
 <head>
     <title>Video Game Recommender</title>
-    <!-- Use a cool retro gaming font -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Main background with retro gaming image and dark overlay */
+        :root {
+            --bg: radial-gradient(circle at 20% 20%, rgba(255, 0, 153, 0.22), transparent 25%), radial-gradient(circle at 80% 30%, rgba(0, 255, 255, 0.22), transparent 25%), radial-gradient(circle at 50% 80%, rgba(255, 255, 0, 0.16), transparent 25%), #0b0c10;
+            --panel: rgba(20, 20, 30, 0.8);
+            --accent: #ffcc00;
+            --accent-2: #00e0ff;
+            --text: #eaeaea;
+            --muted: #9aa0aa;
+            --glow: 0 0 16px rgba(255, 204, 0, 0.35);
+        }
+        * { box-sizing: border-box; }
         body {
-           
-            background-size: cover;
-            background-color: #121212; /* Dark background */
-            color: #e0e0e0;
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Press Start 2P', cursive, sans-serif;
             margin: 0;
-            padding: 0;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            position: relative;
+            padding: 24px;
         }
-        .container {
+        .shell {
             width: 100%;
-            max-width: 800px;
-            padding: 40px 20px;
+            max-width: 1100px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 32px 28px 40px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03);
+        }
+        .hero {
+            display: grid;
+            gap: 10px;
             text-align: center;
-            position: relative;
-            z-index: 1;
         }
         .logo {
-            margin-bottom: 20px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 10px;
         }
         .logo img {
-            width: 150px;
+            width: 140px;
             height: auto;
             border-radius: 50%;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.7);
+            box-shadow: var(--glow);
+        }
+        .title {
+            font-size: 22px;
+            letter-spacing: 1px;
         }
         .quote {
-            font-size: 20px;
-            margin-bottom: 30px;
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+        .search-wrap {
+            margin: 26px auto 10px;
+            max-width: 720px;
         }
         .search-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto 40px auto;
         }
         .search-bar {
             width: 100%;
-            padding: 15px 60px 15px 20px; /* extra space on right for the icon */
-            font-size: 18px;
-            border: none;
-            border-radius: 30px; /* curved ends */
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-            background-color: #FFFDD0; /* cream color */
-            color: #000;
+            padding: 18px 64px 18px 20px;
+            font-size: 16px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 16px;
+            background: var(--panel);
+            color: var(--text);
+            box-shadow: var(--glow);
         }
-        .search-bar::placeholder {
-            color: pink;
-        }
+        .search-bar::placeholder { color: #ff8dd8; }
         .search-button {
             position: absolute;
-            right: 8px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            background: none;
+            background: linear-gradient(135deg, #ffcc00, #ff7b00);
             border: none;
-            font-size: 24px;
-            color: #ffcc00;
+            color: #0b0c10;
+            font-size: 20px;
+            padding: 10px 14px;
+            border-radius: 12px;
             cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 124, 0, 0.35);
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
         }
-        /* Ticker styles: matching background (#1e1e1e) to blend with game blocks */
+        .search-button:hover { transform: translateY(-50%) scale(1.05); box-shadow: 0 10px 24px rgba(255,124,0,0.45); }
+        .search-button:active { transform: translateY(-50%) scale(0.98); }
+
         .ticker {
             overflow: hidden;
             white-space: nowrap;
-            background: black;
-            padding: 10px 0;
-            margin-bottom: 40px;
-            border-radius: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 12px 0;
+            margin: 26px 0 30px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
         }
         .ticker-content {
             display: inline-block;
             padding-left: 100%;
-            animation: scroll 20s linear infinite;
+            animation: scroll 18s linear infinite;
         }
         .ticker-content img {
             margin: 0 20px;
-            width: 50px;
-            height: 50px;
+            width: 54px;
+            height: 54px;
             vertical-align: middle;
-            border-radius: 50%; /* Makes the images round */
-            border: 2px solid #1e1e1e; /* Matches the ticker background */
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.06);
+            box-shadow: var(--glow);
         }
         @keyframes scroll {
             from { transform: translateX(0); }
             to { transform: translateX(-100%); }
         }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-top: 20px;
+        }
         .game {
-            margin: 20px auto;
-            width: 90%;
-            padding: 20px;
-            background: #1e1e1e;
-            border-radius: 15px;
-            transition: transform 0.2s;
-            cursor: pointer;
+            background: var(--panel);
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+            text-align: left;
         }
         .game:hover {
-            transform: scale(1.03);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.45);
+            border-color: rgba(255,204,0,0.45);
+        }
+        .game h2 {
+            font-size: 16px;
+            margin: 0 0 10px;
+            color: var(--accent);
         }
         .cover {
             width: 100%;
-            max-width: 300px;
-            border-radius: 15px;
-            transition: transform 0.2s;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
         }
-        .cover:hover {
-            transform: scale(1.05);
+        .meta {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5;
         }
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        /* Loading overlay styles */
+        a { text-decoration: none; color: inherit; }
+
         #loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(18, 18, 18, 0.95);
+            background: rgba(11, 12, 16, 0.92);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            display: none; /* Hidden by default */
+            display: none;
         }
         #loading-overlay .spinner {
             font-size: 48px;
-            color: #ffcc00;
+            color: var(--accent);
             animation: spin 1.5s linear infinite, glitch 1s ease-in-out infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes glitch {
             0% { filter: drop-shadow(2px 2px 2px #ff0000); }
             20% { filter: drop-shadow(-2px -2px 2px #00ff00); }
@@ -155,48 +192,52 @@
             80% { filter: drop-shadow(2px 2px 2px #00ffff); }
             100% { filter: drop-shadow(-2px -2px 2px #ffcc00); }
         }
+
+        @media (max-width: 640px) {
+            body { padding: 16px; }
+            .shell { padding: 22px 18px 28px; }
+            .title { font-size: 18px; }
+            .quote { font-size: 12px; }
+        }
     </style>
     <script>
-        // Show loading overlay on form submit
         function showLoading() {
             document.getElementById("loading-overlay").style.display = "flex";
         }
     </script>
 </head>
 <body>
-    <!-- Loading Overlay with Glitchy Spinner -->
     <div id="loading-overlay">
         <i class="fas fa-spinner spinner"></i>
     </div>
 
-    <div class="container">
-        
-    <div class="logo">
-        <img src="{{ url_for('static', filename='logo.webp') }}" alt="Your Custom Logo">
-    </div>
-
-        <!-- Cool Quote -->
-        <div class="quote">
-            Reveal the game your heart seeks—but you can't name it.
+    <div class="shell">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.webp') }}" alt="Your Custom Logo">
         </div>
-        <!-- Search Bar with Icon -->
-        <div class="search-container">
-            <form method="post" onsubmit="showLoading()">
-                <input type="text" name="query" class="search-bar" placeholder="Describe the game you’d like to play but don’t know the name of" required>
-                <button type="submit" class="search-button">
-                    <i class="fa fa-search"></i>
-                </button>
-            </form>
+
+        <div class="hero">
+            <div class="title">Describe the entertainment your heart seeks</div>
+            <div class="quote">I will find the games that match your vibe.</div>
+        </div>
+
+        <div class="search-wrap">
+            <div class="search-container">
+                <form method="post" onsubmit="showLoading()">
+                    <input type="text" name="query" class="search-bar" placeholder="Describe the story of the game you'd like to play" required value="{{ query }}">
+                    <button type="submit" class="search-button">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </form>
+            </div>
         </div>
 
         {% if error_msg %}
-            <div class="error-message" style="color: #ffcc00; font-size: 18px; margin-bottom: 40px;">
+            <div class="error-message" style="color: #ffcc00; font-size: 18px; margin: 20px 0 10px;">
                 {{ error_msg }}
             </div>
         {% endif %}
 
-
-        <!-- Ticker with Retro Gaming Controller Icons -->
         <div class="ticker">
             <div class="ticker-content">
                 <img src="{{ url_for('static', filename='logo1.webp') }}" alt="Icon 1">
@@ -204,7 +245,6 @@
                 <img src="{{ url_for('static', filename='logo3.webp') }}" alt="Icon 3">
                 <img src="{{ url_for('static', filename='logo4.webp') }}" alt="Icon 4">
                 <img src="{{ url_for('static', filename='logo5.webp') }}" alt="Icon 5">
-                <!-- Repeat for continuous effect -->
                 <img src="{{ url_for('static', filename='logo1.webp') }}" alt="Icon 1">
                 <img src="{{ url_for('static', filename='logo2.webp') }}" alt="Icon 2">
                 <img src="{{ url_for('static', filename='logo3.webp') }}" alt="Icon 3">
@@ -213,24 +253,24 @@
             </div>
         </div>
 
-        <!-- Recommended Games -->
         {% if recommendations %}
-            {% for game in recommendations %}
-            <a href="{{ game.website }}" target="_blank">
-                <div class="game">
-                    <h2>{{ game.name }}</h2>
-                    {% if game.cover %}
-                        <img src="{{ game.cover }}" alt="Cover image for {{ game.name }}" class="cover">
-                    {% endif %}
-                    <p><strong>Released:</strong> {{ game.released }}</p>
-                    <p><strong>Rating:</strong> {{ game.rating }}</p>
-                </div>
-            </a>
-            {% endfor %}
+            <div class="results-grid">
+                {% for game in recommendations %}
+                <a href="{{ game.website }}" target="_blank" rel="noopener noreferrer">
+                    <div class="game">
+                        {% if game.cover %}
+                            <img src="{{ game.cover }}" alt="Cover image for {{ game.name }}" class="cover">
+                        {% endif %}
+                        <h2>{{ game.name }}</h2>
+                        <div class="meta">
+                            <div><strong>Released:</strong> {{ game.released }}</div>
+                            <div><strong>Rating:</strong> {{ game.rating }}</div>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
         {% endif %}
- 
     </div>
-
-      
 </body>
 </html>
