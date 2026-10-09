@@ -3,8 +3,7 @@ import os
 
 from flask import Flask, request, render_template, redirect, url_for, session
 
-from services.openai_service import get_game_recommendations
-from services.rawg_service import fetch_game_metadata
+from services.recommender import recommend
 
 app = Flask(__name__)
 
@@ -14,20 +13,9 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "yfootballm")
 def index():
     default_quote = "Uncover the game that fuels your passion."
     if request.method == "POST":
-        query = request.form.get("query")
-        recommendations = []
-        error_msg = None
-        if query:
-            game_names, gen_error = get_game_recommendations(query)
-            if gen_error:
-                error_msg = gen_error
-            elif not game_names:
-                error_msg = "No games matched that description. Try adjusting keywords or genre."
-            else:
-                game_names = list(dict.fromkeys(game_names))
-                for game in game_names:
-                    details = fetch_game_metadata(game)
-                    recommendations.append(details)
+        query = request.form.get("query", "")
+        recommendations, error_msg = recommend(query)
+        query = query[:300]  # keep the session cookie small
         # Save query, quote, recommendations, and error message in session
         session["query"] = query
         session["quote"] = default_quote

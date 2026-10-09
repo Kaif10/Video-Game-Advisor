@@ -14,7 +14,8 @@ The UI is a single-page, retro‑styled experience backed by two service layers:
 ## Tech Stack
 
 - **Backend:** Python, Flask
-- **AI:** OpenAI Chat Completions (`gpt-4o-mini` with `gpt-3.5-turbo` fallback)
+- **AI:** OpenAI Chat Completions with Structured Outputs (`gpt-4o-mini`)
+- **Validation:** Pydantic
 - **Game data:** RAWG API
 - **Server:** Gunicorn (via `Dockerfile` and `Procfile` for deployment)
 
@@ -24,7 +25,10 @@ The UI is a single-page, retro‑styled experience backed by two service layers:
 
 - `app.py` – Flask app, routes, session handling, security headers.
 - `services/openai_service.py` – Calls OpenAI to turn your prompt into specific game titles.
-- `services/rawg_service.py` – Calls RAWG to fetch cover art, rating, release date and canonical game URLs.
+- `services/rawg_service.py` – Verifies each candidate on RAWG (capped at 15 calls/request) and fetches cover art, rating, release date and canonical game URLs.
+- `services/schemas.py` – Pydantic models validating LLM output and RAWG responses.
+- `services/recommender.py` – Orchestrates the pipeline: query → candidates → verified results.
+- `tests/` – Pipeline tests with OpenAI and RAWG mocked.
 - `config.py` – Environment loading, HTTP session, OpenAI client, global config.
 - `templates/index.html` – Main HTML template and UI.
 - `static/` – Logos and other static assets.
@@ -73,7 +77,9 @@ pip install -r requirements.txt
 
 ### 4. Create your `.env` file
 
-In the project root (same folder as `app.py`), create a file named `.env`:
+In the project root (same folder as `app.py`), create a file named `.env`.
+
+You can start by copying `env.example` to `.env`, then fill in your keys.
 
 ```env
 OPENAI_API_KEY=your-openai-api-key-here
@@ -86,7 +92,7 @@ Notes:
 
 - `config.py` automatically loads `.env` at startup.
 - The `OPENAI_API_KEY` **must** be set; the app will raise an error if it is missing.
-- `RAWG_API_KEY` has a hard‑coded fallback in `config.py`, but you should always use your own key.
+- `RAWG_API_KEY` is optional; if you omit it, the app will still run but it will skip RAWG lookups (you’ll see `"N/A"` metadata).
 - `.env` is listed in `.gitignore` and should **never** be committed.
 
 ### 5. Run the app
@@ -108,42 +114,54 @@ http://localhost:8080
 
 ## How It Works
 
+```
+query ─► OpenAI (strict JSON schema) ─► Pydantic validation ─► RAWG lookups (parallel, capped) ─► cards
+```
+
 1. **User input**  
-   On `/`, you enter a description of the kind of game you want.
+   On `/`, you describe the kind of game you want. The query is whitespace-normalised and capped at 300 characters.
 
-2. **AI game selection**  
-   `services/openai_service.get_game_recommendations()` sends that description to OpenAI with:
-   - A system prompt that enforces “real game titles only”.
-   - A user prompt that asks for 5 matching games, returned as a comma‑separated list.
-   It tries the primary model first (`gpt-4o-mini`), then a fallback (`gpt-3.5-turbo`) if necessary.
+2. **AI game selection** – `services/openai_service.py`  
+   `get_game_candidates()` calls `gpt-4o-mini` with Structured Outputs (`chat.completions.parse`), so the reply is
+   guaranteed to match `RecommendationResponse`: a `status` (`ok` / `no_match`) and a ranked list of
+   `{title, release_year}`. The user's text is delimited and treated as data, not instructions.
+   Refusals and nonsense input return `no_match`; API errors become a friendly message instead of a 500.
 
-3. **Game metadata lookup**  
-   For each returned title, `services/rawg_service.fetch_game_metadata()` queries RAWG and extracts:
-   - Name
-   - Release date
-   - Rating
-   - Cover image
-   - A canonical URL on RAWG
+3. **Validation layer** – `services/schemas.py`  
+   Pydantic models clean titles (list markers, quotes), drop empty/overlong ones, de-duplicate,
+   and cap the list at 8 candidates. RAWG responses are validated by models too.
 
-4. **Rendering**  
-   `app.py` stores query + results in the session and redirects back to `/`, where `templates/index.html` renders a grid of recommendation cards with:
-   - Cover art
-   - Name, release year, rating
-   - Click‑through link to more details
+4. **Game lookup** – `services/rawg_service.py`  
+   Candidates are searched on RAWG in parallel. Each search looks at the top 5 hits and keeps the best one
+   only if title and release year match confidently, so wrong or hallucinated games are dropped.
+   A per-request budget caps RAWG at **15 HTTP calls** (retries included); 429/5xx/timeouts are retried once.
 
-5. **Health check & security headers**  
+5. **Rendering** – `services/recommender.py`, `app.py`  
+   The first 5 verified games (in the LLM's order) are stored in the session, and `/` renders them as cards.
+
+6. **Health check & security headers**  
    - `/healthz` returns a simple JSON `{"status": "ok"}` for uptime checks.  
    - `app.after_request` sets CSP, HSTS, and other standard security headers.
+
+---
+
+## Tests
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -q
+```
+
+OpenAI and RAWG are mocked, so tests need no API keys or network.
 
 ---
 
 ## Environment Variables (Summary)
 
 - `OPENAI_API_KEY` – **Required.** Your OpenAI API key.
-- `RAWG_API_KEY` – Recommended. Your RAWG API key; if missing, `config.py` falls back to a baked‑in key (you should override this).
+- `RAWG_API_KEY` – **Required.** Your RAWG API key.
 - `FLASK_SECRET_KEY` – Secret used for Flask sessions. Set to a long random value in production.
 - `PORT` – Port to bind to. Defaults to `8080`.
-- `REQUEST_TIMEOUT` – Optional, request timeout in seconds for RAWG calls (default `10`).
 
 All of these can go into `.env` for local development.
 

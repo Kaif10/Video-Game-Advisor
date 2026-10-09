@@ -1,60 +1,29 @@
 import logging
 import os
 from pathlib import Path
-
 from requests import Session
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from openai import OpenAI
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Load .env file (overrides environment variables)
+env_file = Path(".env")
+if env_file.exists():
+    for line in env_file.read_text(encoding='utf-8-sig').splitlines():
+        if line and not line.startswith("#") and "=" in line:
+            key, val = line.split("=", 1)
+            os.environ[key.strip()] = val.strip().strip('"').strip("'")
 
+# Get API keys from environment
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+RAWG_API_KEY = os.getenv("RAWG_API_KEY")
 
-def load_env_from_file(path: str = ".env"):
-    """Lightweight .env loader to avoid extra dependencies."""
-    env_path = Path(path)
-    if not env_path.is_file():
-        return
-    for line in env_path.read_text().splitlines():
-        if not line or line.strip().startswith("#") or "=" not in line:
-            continue
-        key, val = line.split("=", 1)
-        key = key.strip()
-        val = val.strip()
-        if key and key not in os.environ:
-            os.environ[key] = val
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
+MODEL = "gpt-4o-mini"
+# (connect, read) seconds per RAWG call. Worst case per user request stays under
+# gunicorn's 30s default: OpenAI 2 x 10s + RAWG 2 attempts x (3 + 5)s in parallel.
+REQUEST_TIMEOUT = (3, 5)
+OPENAI_TIMEOUT = 10
+OPENAI_MAX_RETRIES = 1  # SDK retries connection errors, 408/409/429 and 5xx with backoff
 
-load_env_from_file()
-
-# Timing and model defaults
-REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", 10))
-PRIMARY_MODEL = "gpt-4o-mini"
-FALLBACK_MODEL = "gpt-3.5-turbo"
-
-# RAWG API key: env wins; fallback to the original value if missing.
-RAWG_API_KEY = os.getenv("RAWG_API_KEY", "7c11c6b61443433ba941a9c037147be8")
-
-
-def build_http_session() -> Session:
-    """HTTP session with retries/backoff for outbound calls."""
-    retry_strategy = Retry(
-        total=3,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=("GET",),
-        backoff_factor=0.5,
-        raise_on_status=False,
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session = Session()
-    session.mount("https://", adapter)
-    session.mount("http://", adapter)
-    return session
-
-
-def build_openai_client() -> OpenAI:
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is not set")
-    return OpenAI(api_key=api_key)
+http_session = Session()
+openai_client = OpenAI(api_key=OPENAI_API_KEY, timeout=OPENAI_TIMEOUT, max_retries=OPENAI_MAX_RETRIES)
