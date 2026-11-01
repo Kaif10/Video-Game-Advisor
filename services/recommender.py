@@ -27,6 +27,7 @@ def recommend(query: str) -> Tuple[List[dict], Optional[str]]:
     except RecommendationError as exc:
         return [], str(exc)
     if not candidates:
+        logger.info("query=%r candidates=0 (LLM returned no_match)", query)
         return [], NO_MATCH_MSG
 
     # Look candidates up concurrently; budget caps total RAWG calls for this request.
